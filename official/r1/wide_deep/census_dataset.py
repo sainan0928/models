@@ -60,8 +60,8 @@ _NUM_EXAMPLES = {
 def _download_and_clean_file(filename, url):
   """Downloads data from url, and makes changes to match the CSV format."""
   temp_file, _ = urllib.request.urlretrieve(url)
-  with tf.gfile.Open(temp_file, 'r') as temp_eval_file:
-    with tf.gfile.Open(filename, 'w') as eval_file:
+  with tf.compat.v1.gfile.Open(temp_file, 'r') as temp_eval_file:
+    with tf.compat.v1.gfile.Open(filename, 'w') as eval_file:
       for line in temp_eval_file:
         line = line.strip()
         line = line.replace(', ', ',')
@@ -71,19 +71,19 @@ def _download_and_clean_file(filename, url):
           line = line[:-1]
         line += '\n'
         eval_file.write(line)
-  tf.gfile.Remove(temp_file)
+  tf.io.gfile.remove(temp_file)
 
 
 def download(data_dir):
   """Download census data if it is not already present."""
-  tf.gfile.MakeDirs(data_dir)
+  tf.io.gfile.makedirs(data_dir)
 
   training_file_path = os.path.join(data_dir, TRAINING_FILE)
-  if not tf.gfile.Exists(training_file_path):
+  if not tf.io.gfile.exists(training_file_path):
     _download_and_clean_file(training_file_path, TRAINING_URL)
 
   eval_file_path = os.path.join(data_dir, EVAL_FILE)
-  if not tf.gfile.Exists(eval_file_path):
+  if not tf.io.gfile.exists(eval_file_path):
     _download_and_clean_file(eval_file_path, EVAL_URL)
 
 
@@ -101,6 +101,10 @@ def build_model_columns():
           'Bachelors', 'HS-grad', '11th', 'Masters', '9th', 'Some-college',
           'Assoc-acdm', 'Assoc-voc', '7th-8th', 'Doctorate', 'Prof-school',
           '5th-6th', '10th', '1st-4th', 'Preschool', '12th'])
+  # categorical_column_with_vocabulary_list: OHE, use for low cardinality catg fts
+  # use embeddings for high cardinality (i.e. > thousands unique levels) catg fts
+  # when cardinality is very high, it becomes infeasible to train a neural network using OHE
+  # embedding: low dim dense vector, tune size
 
   marital_status = tf.feature_column.categorical_column_with_vocabulary_list(
       'marital_status', [
@@ -120,6 +124,11 @@ def build_model_columns():
   # To show an example of hashing:
   occupation = tf.feature_column.categorical_column_with_hash_bucket(
       'occupation', hash_bucket_size=_HASH_BUCKET_SIZE)
+  # use _hash_bucket when sparse features are in string or integer format
+  # A hash function takes as input a key, which is associated with a record and used to identify it to data storage and retrieval application.
+  # The keys may be fixed length, like an integer, or variable length, like a name.
+  # The output is a hash code used to index a hash table holding the data or records, or pointers to them.
+  # Set hash_bucket_size to avoid collisions: https://stackoverflow.com/questions/45685301/principle-of-setting-hash-bucket-size-parameter
 
   # Transformations.
   age_buckets = tf.feature_column.bucketized_column(
@@ -138,7 +147,8 @@ def build_model_columns():
           [age_buckets, 'education', 'occupation'],
           hash_bucket_size=_HASH_BUCKET_SIZE),
   ]
-
+  # Create cross fts for any catg column, except categorical_column_with_hash_bucket (since crossed_column hashes the input)
+  # Keep uncrossed fts in model, indep ft help model to distinguish btwn samples where a collision occurred in crossed ft
   wide_columns = base_columns + crossed_columns
 
   deep_columns = [
@@ -160,13 +170,13 @@ def build_model_columns():
 
 def input_fn(data_file, num_epochs, shuffle, batch_size):
   """Generate an input function for the Estimator."""
-  assert tf.gfile.Exists(data_file), (
+  assert tf.io.gfile.exists(data_file), (
       '%s not found. Please make sure you have run census_dataset.py and '
       'set the --data_dir argument to the correct path.' % data_file)
 
   def parse_csv(value):
-    tf.logging.info('Parsing {}'.format(data_file))
-    columns = tf.decode_csv(value, record_defaults=_CSV_COLUMN_DEFAULTS)
+    tf.compat.v1.logging.info('Parsing {}'.format(data_file))
+    columns = tf.io.decode_csv(value, record_defaults=_CSV_COLUMN_DEFAULTS)
     features = dict(list(zip(_CSV_COLUMNS, columns)))
     labels = features.pop('income_bracket')
     classes = tf.equal(labels, '>50K')  # binary classification
@@ -200,6 +210,6 @@ def main(_):
 
 
 if __name__ == '__main__':
-  tf.logging.set_verbosity(tf.logging.INFO)
+  tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
   define_data_download_flags()
   absl_app.run(main)

@@ -102,24 +102,24 @@ def run_loop(name, train_input_fn, eval_input_fn, model_column_fn,
   loss_prefix = LOSS_PREFIX.get(flags_obj.model_type, '')
   tensors_to_log = {k: v.format(loss_prefix=loss_prefix)
                     for k, v in tensors_to_log.items()}
-  train_hooks = hooks_helper.get_train_hooks(
-      flags_obj.hooks, model_dir=flags_obj.model_dir,
-      batch_size=flags_obj.batch_size, tensors_to_log=tensors_to_log)
+  # train_hooks = hooks_helper.get_train_hooks(
+  #     flags_obj.hooks, model_dir=flags_obj.model_dir,
+  #     batch_size=flags_obj.batch_size, tensors_to_log=tensors_to_log)
 
   # Train and evaluate the model every `flags.epochs_between_evals` epochs.
   for n in range(flags_obj.train_epochs // flags_obj.epochs_between_evals):
-    model.train(input_fn=train_input_fn, hooks=train_hooks)
+    model.train(input_fn=train_input_fn)
 
     results = model.evaluate(input_fn=eval_input_fn)
 
     # Display evaluation metrics
-    tf.logging.info('Results at epoch %d / %d',
+    tf.compat.v1.logging.info('Results at epoch %d / %d',
                     (n + 1) * flags_obj.epochs_between_evals,
                     flags_obj.train_epochs)
-    tf.logging.info('-' * 60)
+    tf.compat.v1.logging.info('-' * 60)
 
     for key in sorted(results):
-      tf.logging.info('%s: %s' % (key, results[key]))
+      tf.compat.v1.logging.info('%s: %s' % (key, results[key]))
 
     benchmark_logger.log_evaluation_result(results)
 

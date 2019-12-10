@@ -46,9 +46,9 @@ def build_estimator(model_dir, model_type, model_column_fn, inter_op, intra_op):
   # Create a tf.estimator.RunConfig to ensure the model is run on CPU, which
   # trains faster than GPU for this model.
   run_config = tf.estimator.RunConfig().replace(
-      session_config=tf.ConfigProto(device_count={'GPU': 0},
-                                    inter_op_parallelism_threads=inter_op,
-                                    intra_op_parallelism_threads=intra_op))
+      session_config=tf.compat.v1.ConfigProto(device_count={'GPU': 0},
+                                              inter_op_parallelism_threads=inter_op,
+                                              intra_op_parallelism_threads=intra_op))
 
   if model_type == 'wide':
     return tf.estimator.LinearClassifier(
@@ -111,6 +111,6 @@ def main(_):
 
 
 if __name__ == '__main__':
-  tf.logging.set_verbosity(tf.logging.INFO)
+  tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
   define_census_flags()
   absl_app.run(main)
