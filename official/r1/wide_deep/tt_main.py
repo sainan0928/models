@@ -98,3 +98,6 @@ if __name__ == '__main__':
   tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
   define_a6_nowait_flags()
   absl_app.run(main)
+
+# View tensorboard
+# (tensorflow_37) C:\Users\DUJE2\gvvmc_new\gvvmc>tensorboard --logdir='C:\\tmp\\a6_nowait_model'
