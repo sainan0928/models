@@ -8,6 +8,7 @@ from official.utils.logs import logger
 from official.r1.wide_deep import tt_dataset
 from official.r1.wide_deep import wide_deep_run_loop
 print('Remember to empty model directory (C:\\tmp\\a6_nowait_model) before running main.py')
+print('Also, set project interpreter to tensorflow_37')
 
 
 def define_a6_nowait_flags():

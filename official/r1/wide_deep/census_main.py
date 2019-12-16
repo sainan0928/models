@@ -24,6 +24,9 @@ from official.utils.flags import core as flags_core
 from official.utils.logs import logger
 from official.r1.wide_deep import census_dataset
 from official.r1.wide_deep import wide_deep_run_loop
+print('Remember to empty model directory (C:\\tmp\\census_model) before running main.py')
+print('Also, set project interpreter to tensorflow_37')
+
 
 
 def define_census_flags():
