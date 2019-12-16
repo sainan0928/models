@@ -196,6 +196,9 @@ def input_fn(data_file, num_epochs, shuffle, batch_size):
   dataset = dataset.batch(batch_size)
   return dataset
 
+train_census = input_fn('C:\\tmp\\census_data\\adult.data', 2, True, 40)
+
+
 
 def define_data_download_flags():
   """Add flags specifying data download arguments."""

@@ -124,7 +124,8 @@ def run_loop(name, train_input_fn, eval_input_fn, model_column_fn,
     benchmark_logger.log_evaluation_result(results)
 
     if early_stop and model_helpers.past_stop_threshold(
-        flags_obj.stop_threshold, results['accuracy']):
+        # use results['accuracy'] if build_estimator() uses Classifier
+        flags_obj.stop_threshold, results['loss']):
       break
 
   # Export the model
