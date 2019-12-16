@@ -5,10 +5,11 @@ import tensorflow as tf
 
 from official.utils.flags import core as flags_core
 from official.utils.logs import logger
-from official.r1.wide_deep import tt_dataset
+from official.r1.wide_deep import tt_dataset # if using models/official/r1/wide_deep branch
+# from notebooks.model.cseta_a6_nowait import tt_dataset
 from official.r1.wide_deep import wide_deep_run_loop
 print('Remember to empty model directory (C:\\tmp\\a6_nowait_model) before running main.py')
-print('Also, set project interpreter to tensorflow_37')
+print('Also, set project interpreter to tensorflow_37, or 3.7 okay; this uses tensorflow_37')
 
 
 def define_a6_nowait_flags():

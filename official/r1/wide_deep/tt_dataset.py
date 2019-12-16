@@ -32,12 +32,12 @@ EVAL_URL = '%s/%s' % (DATA_URL, EVAL_FILE)
 
 _CSV_COLUMNS = [
     'speed', 'ais_rem_time', 'inv_speed', 'haversine_distance', 'coastal_rem_time',
-    'dest_lat', 'dest_lon', 'dest_country_code',
+    'dest_lat', 'dest_lon', 'dest_country_code', 'sch_scac',
     'y_actual_log'
 ]
 
 _CSV_COLUMN_DEFAULTS = [[0.0], [0.0], [0.0], [0.0], [0.0],
-                        [0.0], [0.0], [''],
+                        [''], [''], [''], [''],
                         [0.0]]
 
 _HASH_BUCKET_SIZE = 1000
@@ -89,8 +89,8 @@ def build_model_columns():
   ais_rem_time = tf.feature_column.numeric_column('ais_rem_time')
   haversine_distance = tf.feature_column.numeric_column('haversine_distance')
   coastal_rem_time = tf.feature_column.numeric_column('coastal_rem_time')
-  dest_lat = tf.feature_column.numeric_column('dest_lat')
-  dest_lon = tf.feature_column.numeric_column('dest_lon')
+  # dest_lat = tf.feature_column.numeric_column('dest_lat')
+  # dest_lon = tf.feature_column.numeric_column('dest_lon')
 
   # df_train_10k['dest_lat'] = df_train_10k['dest_lat'].astype(str)
   # df_train_10k['dest_lon'] = df_train_10k['dest_lon'].astype(str)
@@ -141,10 +141,160 @@ def build_model_columns():
                          'CO',
                          'CR',
                          'NZ'])
-  # dest_lat = tf.feature_column.categorical_column_with_vocabulary_list(
-  #     'dest_lat', dest_lat_levels_ls)
-  # dest_lon = tf.feature_column.categorical_column_with_vocabulary_list(
-  #     'dest_lon', dest_lon_levels_ls)
+  sch_scac = tf.feature_column.categorical_column_with_vocabulary_list(
+      'sch_scac', ['others'])
+  dest_lat = tf.feature_column.categorical_column_with_vocabulary_list(
+      'dest_lat', ['32.794046',
+                 '-33.924869',
+                 '-22.956111',
+                 '32.367635',
+                 '41.189018',
+                 '51.35265',
+                 '42.240598999999996',
+                 '51.92442',
+                 '22.872142',
+                 '54.323293',
+                 '-0.708611',
+                 '-5.147665',
+                 '24.479834',
+                 '38.977426',
+                 '34.690083',
+                 '33.591358',
+                 '33.941137999999995',
+                 '33.250692',
+                 '34.50401',
+                 '32.427517',
+                 '33.558803999999995',
+                 '-34.480074',
+                 '-19.257621999999998',
+                 '53.66576',
+                 '32.715738',
+                 '53.539584',
+                 '31.321171999999997',
+                 '45.64129',
+                 '49.286',
+                 '41.004297',
+                 '38.052420999999995',
+                 '35.607267',
+                 '-27.37595',
+                 '34.769199',
+                 '35.184148',
+                 '34.006831999999996',
+                 '-33.958718',
+                 '37.476364',
+                 '9.142275999999999',
+                 '39.290385',
+                 '22.83952',
+                 '-34.095780999999995',
+                 '51.318946',
+                 '43.529303',
+                 '49.494369999999996',
+                 '24.513507999999998',
+                 '30.510582999999997',
+                 '-18.144281',
+                 '42.822275',
+                 '35.530906',
+                 '34.510791999999995',
+                 '53.359401999999996',
+                 '54.604',
+                 '51.474216',
+                 '39.679863',
+                 '36.96635',
+                 '33.57311',
+                 '1.2800939999999998',
+                 '34.147783',
+                 '31.76633',
+                 '-0.967653',
+                 '34.940695999999996',
+                 '35.443708',
+                 '24.985713999999998',
+                 '25.15958',
+                 '23.085594',
+                 '50.9097',
+                 '18.938631',
+                 '-20.930377999999997',
+                 '22.396428',
+                 '3.883047',
+                 '35.97556',
+                 '41.385062999999995',
+                 '9.99131',
+                 '-36.848459'])
+  dest_lon = tf.feature_column.categorical_column_with_vocabulary_list(
+      'dest_lon', ['34.989571',
+                 '18.424055',
+                 '14.508056',
+                 '15.219265',
+                 '-8.680818',
+                 '4.256473',
+                 '-8.720727',
+                 '4.1403859999999995',
+                 '113.572111',
+                 '10.122765',
+                 '119.857778',
+                 '119.432731',
+                 '118.089425',
+                 '117.74374',
+                 '135.195511',
+                 '130.414878',
+                 '130.959663',
+                 '131.738944',
+                 '133.673744',
+                 '131.669023',
+                 '133.531168',
+                 '150.900495',
+                 '146.817879',
+                 '-0.236764',
+                 '-117.16108',
+                 '8.580942',
+                 '121.655358',
+                 '-122.74900000000001',
+                 '-123.09200000000001',
+                 '29.013133',
+                 '-122.21302',
+                 '140.106291',
+                 '153.171515',
+                 '137.39146',
+                 '128.603532',
+                 '131.559326',
+                 '25.639319',
+                 '126.616936',
+                 '-79.724052',
+                 '-76.612189',
+                 '69.72132599999999',
+                 '-59.024229999999996',
+                 '3.2068499999999998',
+                 '10.372247999999999',
+                 '0.107929',
+                 '56.611774',
+                 '32.445309',
+                 '49.395782999999994',
+                 '132.88340399999998',
+                 '139.703051',
+                 '135.453948',
+                 '7.206009',
+                 '-1.1580000000000001',
+                 '-2.7211089999999998',
+                 '-0.27843799999999996',
+                 '126.836105',
+                 '-7.589842999999999',
+                 '103.85094',
+                 '-119.19510000000001',
+                 '120.939119',
+                 '-80.70891',
+                 '127.695888',
+                 '139.638026',
+                 '55.02729',
+                 '121.39468',
+                 '113.40645599999999',
+                 '-1.40435',
+                 '72.84102899999999',
+                 '55.315346',
+                 '114.109497',
+                 '-77.01972099999999',
+                 '126.56103999999999',
+                 '2.173403',
+                 '-83.041507',
+                 '174.763331'])
 
   # use _hash_bucket when sparse features are in string or integer format
   # A hash function takes as input a key, which is associated with a record and used to identify it to data storage and retrieval application.
@@ -160,7 +310,10 @@ def build_model_columns():
   #     age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
 
   # Wide columns and deep columns.
-  base_columns = [dest_country_code,
+  base_columns = [dest_lat,
+                  dest_lon,
+                  dest_country_code,
+                  sch_scac,
                   ]
 
   # crossed_columns = [
@@ -182,10 +335,10 @@ def build_model_columns():
       ais_rem_time,
       haversine_distance,
       coastal_rem_time,
-      dest_lat,
-      dest_lon,
-      # tf.feature_column.indicator_column(sch_scac),
+      tf.feature_column.indicator_column(dest_lat),
+      tf.feature_column.indicator_column(dest_lon),
       tf.feature_column.indicator_column(dest_country_code),
+      tf.feature_column.indicator_column(sch_scac),
       # tf.feature_column.indicator_column(dest_lat),
       # tf.feature_column.indicator_column(dest_lon),
       # To show an example of embedding
@@ -203,7 +356,7 @@ def build_model_columns():
 def input_fn(data_file, num_epochs, shuffle, batch_size):
   """Generate an input function for the Estimator."""
   assert tf.io.gfile.exists(data_file), (
-      '%s not found. Please make sure you have run a6_nowait_dataset.py and '
+      '%s not found. Please make sure you have run tt_dataset.py and '
       'set the --data_dir argument to the correct path.' % data_file)
 
   def parse_csv(value):
