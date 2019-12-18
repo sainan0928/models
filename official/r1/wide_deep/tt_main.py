@@ -2,6 +2,7 @@ import os
 from absl import app as absl_app
 from absl import flags
 import tensorflow as tf
+import pickle
 
 from official.utils.flags import core as flags_core
 from official.utils.logs import logger
@@ -9,7 +10,7 @@ from official.r1.wide_deep import tt_dataset # if using models/official/r1/wide_
 # from notebooks.model.cseta_a6_nowait import tt_dataset
 from official.r1.wide_deep import wide_deep_run_loop
 print('Remember to empty model directory (C:\\tmp\\a6_nowait_model) before running main.py')
-print('Also, set project interpreter to tensorflow_37, or 3.7 okay; this uses tensorflow_37')
+print('Also, set project interpreter to tensorflow_37, or 3.7 okay; this uses 3.7')
 
 
 def define_a6_nowait_flags():
@@ -17,7 +18,7 @@ def define_a6_nowait_flags():
   flags.adopt_module_key_flags(wide_deep_run_loop)
   flags_core.set_defaults(data_dir='C:\\tmp\\a6_nowait_data',
                           model_dir='C:\\tmp\\a6_nowait_model',
-                          train_epochs=40,
+                          train_epochs=500,
                           epochs_between_evals=2,
                           inter_op_parallelism_threads=0,
                           intra_op_parallelism_threads=0,
@@ -61,8 +62,8 @@ def run_tt(flags_obj):
   Args:
     flags_obj: Object containing user specified flags.
   """
-  if flags_obj.download_if_missing:
-    tt_dataset.download(flags_obj.data_dir)
+  # if flags_obj.download_if_missing:
+  #   tt_dataset.download(flags_obj.data_dir)
 
   train_file = os.path.join(flags_obj.data_dir, tt_dataset.TRAINING_FILE)
   test_file = os.path.join(flags_obj.data_dir, tt_dataset.EVAL_FILE)
@@ -70,7 +71,7 @@ def run_tt(flags_obj):
   # Train and evaluate the model every `flags.epochs_between_evals` epochs.
   def train_input_fn():
     return tt_dataset.input_fn(
-        train_file, flags_obj.epochs_between_evals, False, flags_obj.batch_size)
+        train_file, flags_obj.epochs_between_evals, True, flags_obj.batch_size)
 
   def eval_input_fn():
     return tt_dataset.input_fn(test_file, 1, False, flags_obj.batch_size)
@@ -80,7 +81,7 @@ def run_tt(flags_obj):
       'loss': '{loss_prefix}head/weighted_loss/Sum'
   }
 
-  wide_deep_run_loop.run_loop(
+  results = wide_deep_run_loop.run_loop(
       name="Transit Time", train_input_fn=train_input_fn,
       eval_input_fn=eval_input_fn,
       model_column_fn=tt_dataset.build_model_columns,
@@ -88,6 +89,18 @@ def run_tt(flags_obj):
       flags_obj=flags_obj,
       tensors_to_log=tensors_to_log,
       early_stop=True)
+
+  wide_deep_run_loop.export_model(model = results['model'], model_type='wide_deep',
+                                  export_dir = 'C:\\tmp\\a6_nowait_tfmodel',
+                                  model_column_fn=tt_dataset.build_model_columns)
+
+  eval_pred_ls = list(results['eval_pred'])
+  train_pred_ls = list(results['train_pred'])
+  with open('C:\\tmp\\a6_nowait_predictions\\eval_pred.txt', 'wb') as fp:
+      pickle.dump(eval_pred_ls, fp)
+  with open('C:\\tmp\\a6_nowait_predictions\\train_pred.txt', 'wb') as fp:
+      pickle.dump(train_pred_ls, fp)
+
 
 def main(_):
   with logger.benchmark_context(flags.FLAGS):
@@ -100,4 +113,9 @@ if __name__ == '__main__':
   absl_app.run(main)
 
 # View tensorboard
+# conda activate tensorflow_37
 # (tensorflow_37) C:\Users\DUJE2\gvvmc_new\gvvmc>tensorboard --logdir='C:\\tmp\\a6_nowait_model'
+
+# save model
+# with tf.Session(graph=tf.Graph()) as sess:
+#     imported = tf.compat.v1.saved_model.load(sess, ["serve"], "C:\\tmp\\a6_nowait_tfmodel\\1576564864")

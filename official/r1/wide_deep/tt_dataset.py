@@ -20,9 +20,9 @@ from official.utils.flags import core as flags_core
 
 
 DATA_URL = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult'
-TRAINING_FILE = 'df_train_10k.csv'
+TRAINING_FILE = 'toy_train.csv'
 TRAINING_URL = '%s/%s' % (DATA_URL, TRAINING_FILE)
-EVAL_FILE = 'df_eval_3k.csv'
+EVAL_FILE = 'toy_test.csv'
 EVAL_URL = '%s/%s' % (DATA_URL, EVAL_FILE)
 
 # data_dir = 'C:\\tmp\\a6_nowait_data'
@@ -33,7 +33,7 @@ EVAL_URL = '%s/%s' % (DATA_URL, EVAL_FILE)
 _CSV_COLUMNS = [
     'speed', 'ais_rem_time', 'inv_speed', 'haversine_distance', 'coastal_rem_time',
     'dest_lat', 'dest_lon', 'dest_country_code', 'sch_scac',
-    'y_actual_log'
+    'y_actual'
 ]
 
 _CSV_COLUMN_DEFAULTS = [[0.0], [0.0], [0.0], [0.0], [0.0],
@@ -43,8 +43,8 @@ _CSV_COLUMN_DEFAULTS = [[0.0], [0.0], [0.0], [0.0], [0.0],
 _HASH_BUCKET_SIZE = 1000
 
 _NUM_EXAMPLES = {
-    'train': 29814,
-    'validation': 9934,
+    'train': 50000,
+    'validation': 9999,
 }
 
 
@@ -91,11 +91,6 @@ def build_model_columns():
   coastal_rem_time = tf.feature_column.numeric_column('coastal_rem_time')
   # dest_lat = tf.feature_column.numeric_column('dest_lat')
   # dest_lon = tf.feature_column.numeric_column('dest_lon')
-
-  # df_train_10k['dest_lat'] = df_train_10k['dest_lat'].astype(str)
-  # df_train_10k['dest_lon'] = df_train_10k['dest_lon'].astype(str)
-  # dest_lat_levels_ls = df_train_10k['dest_lat'].unique().tolist()
-  # dest_lon_levels_ls = df_train_10k['dest_lon'].unique().tolist()
 
   # categorical_column_with_vocabulary_list: OHE, use for low cardinality catg fts
   # use embeddings for high cardinality (i.e. > thousands unique levels) catg fts
@@ -339,8 +334,6 @@ def build_model_columns():
       tf.feature_column.indicator_column(dest_lon),
       tf.feature_column.indicator_column(dest_country_code),
       tf.feature_column.indicator_column(sch_scac),
-      # tf.feature_column.indicator_column(dest_lat),
-      # tf.feature_column.indicator_column(dest_lon),
       # To show an example of embedding
       # tf.feature_column.embedding_column(occupation, dimension=8),
   ]
@@ -363,11 +356,11 @@ def input_fn(data_file, num_epochs, shuffle, batch_size):
     tf.compat.v1.logging.info('Parsing {}'.format(data_file))
     columns = tf.io.decode_csv(value, record_defaults=_CSV_COLUMN_DEFAULTS)
     features = dict(list(zip(_CSV_COLUMNS, columns)))
-    labels = features.pop('y_actual_log')
+    labels = features.pop('y_actual')
     return features, labels
 
   # Extract lines from input files using the Dataset API.
-  dataset = tf.data.TextLineDataset(data_file).skip(1)
+  dataset = tf.data.TextLineDataset(data_file)
 
   if shuffle:
     dataset = dataset.shuffle(buffer_size=_NUM_EXAMPLES['train'])

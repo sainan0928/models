@@ -74,7 +74,7 @@ def export_model(model, model_type, export_dir, model_column_fn):
     columns = wide_columns + deep_columns
   feature_spec = tf.feature_column.make_parse_example_spec(columns)
   example_input_fn = (
-      tf.estimator.export.build_parsing_serving_input_receiver_fn(feature_spec))
+      tf.compat.v1.estimator.export.build_parsing_serving_input_receiver_fn(feature_spec))
   model.export_savedmodel(export_dir, example_input_fn,
                           strip_default_attrs=True)
 
@@ -128,7 +128,12 @@ def run_loop(name, train_input_fn, eval_input_fn, model_column_fn,
         flags_obj.stop_threshold, results['loss']):
       break
 
+  # make predictions on both train and eval sets
+  train_pred = model.predict(input_fn = train_input_fn)
+  eval_pred = model.predict(input_fn = eval_input_fn)
+
   # Export the model
   if flags_obj.export_dir is not None:
     export_model(model, flags_obj.model_type, flags_obj.export_dir,
                  model_column_fn)
+  return {'train_pred': train_pred, 'eval_pred': eval_pred, 'model': model}
