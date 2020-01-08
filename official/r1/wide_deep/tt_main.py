@@ -9,15 +9,15 @@ from official.utils.logs import logger
 from official.r1.wide_deep import tt_dataset # if using models/official/r1/wide_deep branch
 # from notebooks.model.cseta_a6_nowait import tt_dataset
 from official.r1.wide_deep import wide_deep_run_loop
-print('Remember to empty model directory (C:\\tmp\\a6_nowait_model) before running main.py')
+print('Remember to empty model directory (D:\\tmp\\a6_nowait_model) before running main.py')
 print('Also, set project interpreter to tensorflow_37, or 3.7 okay; this uses 3.7')
 
 
 def define_a6_nowait_flags():
   wide_deep_run_loop.define_wide_deep_flags()
   flags.adopt_module_key_flags(wide_deep_run_loop)
-  flags_core.set_defaults(data_dir='C:\\tmp\\a6_nowait_data',
-                          model_dir='C:\\tmp\\a6_nowait_model',
+  flags_core.set_defaults(data_dir='D:\\tmp\\a6_nowait_data',
+                          model_dir='D:\\tmp\\a6_nowait_model_sampled_noevalstep',
                           train_epochs=500,
                           epochs_between_evals=2,
                           inter_op_parallelism_threads=0,
@@ -65,10 +65,9 @@ def run_tt(flags_obj):
   # if flags_obj.download_if_missing:
   #   tt_dataset.download(flags_obj.data_dir)
 
+
   train_file = os.path.join(flags_obj.data_dir, tt_dataset.TRAINING_FILE)
   test_file = os.path.join(flags_obj.data_dir, tt_dataset.EVAL_FILE)
-
-  # Train and evaluate the model every `flags.epochs_between_evals` epochs.
   def train_input_fn():
     return tt_dataset.input_fn(
         train_file, flags_obj.epochs_between_evals, True, flags_obj.batch_size)
@@ -91,15 +90,20 @@ def run_tt(flags_obj):
       early_stop=True)
 
   wide_deep_run_loop.export_model(model = results['model'], model_type='wide_deep',
-                                  export_dir = 'C:\\tmp\\a6_nowait_tfmodel',
+                                  export_dir = 'D:\\tmp\\a6_nowait_tfmodel_sampled_noevalstep',
                                   model_column_fn=tt_dataset.build_model_columns)
-
+  print('Creating list of predictions...')
   eval_pred_ls = list(results['eval_pred'])
   train_pred_ls = list(results['train_pred'])
-  with open('C:\\tmp\\a6_nowait_predictions\\eval_pred.txt', 'wb') as fp:
+  print('Finished creating list of predictions.')
+  print('Dumping eval predictions to pickle file...')
+  with open('D:\\tmp\\a6_nowait_predictions_sampled_noevalstep\\eval_pred.txt', 'wb') as fp:
       pickle.dump(eval_pred_ls, fp)
-  with open('C:\\tmp\\a6_nowait_predictions\\train_pred.txt', 'wb') as fp:
+  print('Dumping train predictions to pickle file...')
+  with open('D:\\tmp\\a6_nowait_predictions_sampled_noevalstep\\train_pred.txt', 'wb') as fp:
       pickle.dump(train_pred_ls, fp)
+  print('Finished dumping predictions to pickle files.')
+
 
 
 def main(_):

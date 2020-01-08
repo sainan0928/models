@@ -108,9 +108,9 @@ def run_loop(name, train_input_fn, eval_input_fn, model_column_fn,
 
   # Train and evaluate the model every `flags.epochs_between_evals` epochs.
   for n in range(flags_obj.train_epochs // flags_obj.epochs_between_evals):
-    model.train(input_fn=train_input_fn)
+    model.train(input_fn=train_input_fn, steps = 12500)
 
-    results = model.evaluate(input_fn=eval_input_fn)
+    results = model.evaluate(input_fn=eval_input_fn, steps=1250)
 
     # Display evaluation metrics
     tf.compat.v1.logging.info('Results at epoch %d / %d',
@@ -129,8 +129,11 @@ def run_loop(name, train_input_fn, eval_input_fn, model_column_fn,
       break
 
   # make predictions on both train and eval sets
+  print('Predictions on training set...')
   train_pred = model.predict(input_fn = train_input_fn)
+  print('Finished predictions on training set; Begin predictions on eval set...')
   eval_pred = model.predict(input_fn = eval_input_fn)
+  print('Finished predictions on eval set.')
 
   # Export the model
   if flags_obj.export_dir is not None:
